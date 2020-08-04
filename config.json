@@ -1,0 +1,5 @@
+{
+  "TOKEN" : "<Insert bot token>",
+  "DBUSER" : "<Insert mongodb user>",
+  "DBPASSWORD" : "<Insert Mongodb Password>"
+}
