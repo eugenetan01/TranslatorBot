@@ -3,4 +3,6 @@ httpcore==0.9.1
 httpx==0.13.3
 googletrans
 gTTS
+SpeechRecognition
+ftransc
 pymongo[tls,srv]

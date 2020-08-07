@@ -73,18 +73,34 @@ def translate(update, context):
     defaultLanguage = dbController.getUserDefaultInputLanguage(update.message.from_user['username'])
     language = dbController.getUserDefaultLanguage(update.message.from_user['username'])
     translator = Translator()
-    result = translator.translate(update.message.text, src=defaultLanguage, dest=language)
-    update.message.reply_text(result.text)
-    if result.pronunciation is not None and result.pronunciation != update.message.text and result.pronunciation != result.text:
-            update.message.reply_text(result.pronunciation)
+
+    if update.message.voice is not None:
+        voice = context.bot.getFile(update.message.voice.file_id)
+        toTranslate = controller.audioConversionToText(voice, defaultLanguage, update.message.from_user['username'])
+    else:
+        toTranslate = update.message.text
+
+    if toTranslate == "errorAudio" :
+        update.message.reply_text(translator.translate("Could not understand audio, please send another voice recording please.",src="en", dest=defaultLanguage).text)
+    elif toTranslate == "errorService":
+        update.message.reply_text(translator.translate("Speech input translation service is down. Please try again later.",src="en", dest=defaultLanguage).text)
+    else:
+        result = translator.translate(toTranslate, src=defaultLanguage, dest=language)
+        update.message.reply_text(result.text)
+        if result.pronunciation is not None and result.pronunciation != toTranslate and result.pronunciation != result.text:
+                update.message.reply_text(result.pronunciation)
+
     #else:
     #    errorText = "No text pronunciation available"
     #    update.message.reply_text(translator.translate(errorText, src="en", dest=defaultLanguage).text)
 
     #send text to speech translation
-    tts = gTTS(result.text, lang=language)
-    placeholderEn = "Click here for audio pronunciation in {}: ".format(controller.langNames()[language])
-    update.message.reply_text(translator.translate(placeholderEn, src = "en", dest = defaultLanguage).text + tts.get_urls()[0])
+    try:
+        tts = gTTS(result.text, lang=language)
+        placeholderEn = "Click here for audio pronunciation in {}: ".format(controller.langNames()[language])
+        update.message.reply_text(translator.translate(placeholderEn, src = "en", dest = defaultLanguage).text + tts.get_urls()[0])
+    except:
+        pass
 
 
 def error(update, context):
@@ -125,7 +141,7 @@ def main():
     ))
 
     dp.add_handler(CommandHandler("help", help))
-
+    dp.add_handler(MessageHandler(Filters.voice, translate))
     dp.add_handler(MessageHandler(Filters.text, translate))
     # log all errors
     dp.add_error_handler(error)
@@ -134,7 +150,7 @@ def main():
     #updater.start_webhook(listen="0.0.0.0",
     #                      port=int(PORT),
     #                      url_path=TOKEN)
-    #updater.bot.setWebhook('https://spanishtranslatorbot.herokuapp.com/' + TOKEN)
+    #updater.bot.setWebhook('https://herokuappname.herokuapp.com/' + TOKEN)
 
 
     # Start the Bot
