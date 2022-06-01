@@ -1,6 +1,6 @@
 python-telegram-bot==12.7
 httpcore==0.9.1
-httpx==0.13.3
+httpx==0.23.0
 googletrans
 gTTS
 SpeechRecognition
